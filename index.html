@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scene Narrator</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <h1>🎬 Scene Narrator</h1>
+    <p class="tagline">See → Sense → Speak → Story</p>
+  </header>
+
+  <main>
+    <!-- Camera + landmarks overlay -->
+    <section class="camera-section">
+      <div class="camera-wrap">
+        <video id="video" autoplay playsinline muted></video>
+        <canvas id="overlay"></canvas>
+        <div class="camera-placeholder">📷 Webcam will appear here</div>
+      </div>
+    </section>
+
+    <!-- 3 perception panels -->
+    <section class="perceptions">
+      <article class="panel">
+        <header class="panel-header"><span>👁</span><h2>Scene</h2></header>
+        <div class="panel-body">
+          <div class="label" id="scene-label">desk_workspace</div>
+          <div class="bar"><div class="bar-fill" id="scene-bar" style="width: 91%"></div></div>
+          <div class="muted" id="scene-conf">91% confident</div>
+        </div>
+      </article>
+
+      <article class="panel">
+        <header class="panel-header"><span>🦴</span><h2>Body Language</h2></header>
+        <div class="panel-body">
+          <ul id="features-list">
+            <li>1 person detected</li>
+            <li>Posture: sitting</li>
+            <li>Expression: smiling</li>
+            <li>Hands: at keyboard level</li>
+            <li>Head: tilted slightly left</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="panel">
+        <header class="panel-header"><span>🎙</span><h2>Your Request</h2></header>
+        <div class="panel-body">
+          <div class="transcript" id="transcript">"describe this like a noir detective"</div>
+          <button id="mic-btn" class="btn-secondary">🎤 Start Listening</button>
+        </div>
+      </article>
+    </section>
+
+    <!-- Narration -->
+    <section>
+      <article class="panel panel-narration">
+        <header class="panel-header"><span>📖</span><h2>Narration</h2></header>
+        <div class="panel-body">
+          <p id="narration-text">
+            In the warm glow of a cluttered desk, a figure leans slightly into their work,
+            a quiet smile suggesting the satisfaction of a thought just clicked into place.
+          </p>
+        </div>
+        <footer class="panel-footer">
+          <button id="generate-btn" class="btn-primary">✨ Generate Narration</button>
+          <button id="capture-btn" class="btn-secondary">📸 Capture</button>
+        </footer>
+      </article>
+    </section>
+
+    <!-- History -->
+    <section class="history">
+      <h2 class="history-title">History</h2>
+      <div id="history-list">
+        <p class="empty">Your captured scenes will appear here.</p>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
