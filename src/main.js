@@ -13,8 +13,7 @@ console.log('🎬 Scene Narrator loaded');
 // 👇 PASTE YOUR TEACHABLE MACHINE MODEL URL HERE (keep the trailing slash)
 const TM_MODEL_URL = 'https://teachablemachine.withgoogle.com/models/vhBhcXpCZ/';
 
-const GEMINI_KEY = import.meta.env.VITE_GEMINI_KEY;
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${GEMINI_KEY}`;
+const GEMINI_URL = '/.netlify/functions/gemini';
 
 // =================================
 // STAGE 1 — Teachable Machine
