@@ -8,6 +8,23 @@ what the camera sees and what you asked for.
 
 **Live demo: https://mjeed.netlify.app/**
 
+## One pipeline, three challenges
+
+The bootcamp ran three day-long bonus challenges, each asking for a
+standalone app:
+
+1. **Day 01** — ship something that uses a model *you* trained
+2. **Day 02** — build something that reacts to your body in real time
+3. **Day 03** — wire up the regular voice-to-text → generative pipeline
+
+PIPEL\AINE fuses all three. The same webcam frame is classified by a
+Teachable Machine model I trained (Day 01), parsed for pose and face
+landmarks by MediaPipe (Day 02), and paired with a transcribed voice
+request via the Web Speech API (Day 03). The fused signal is sent to
+Gemini, and the narration is spoken back by a 3D avatar. Each on-screen
+panel is a different session feeding into the next instead of living
+in its own throwaway demo.
+
 ![PIPEL\AINE running — five panels showing scene tag, biometrics, voice input,
 generated narration, and the speaking 3D avatar](docs/screenshot.png)
 
