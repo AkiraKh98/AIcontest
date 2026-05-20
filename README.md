@@ -70,7 +70,7 @@ The client calls `/.netlify/functions/gemini` instead of Google directly, so
 the API key never ships in the bundle. The function:
 
 - Requires `POST` from an `Origin` matching `ALLOWED_ORIGIN`
-- Caps body size at 8 KB and prompt content at 4000 chars
+- Caps request body at 8192 characters
 - Re-serializes the body to forward only the `contents` field, stripping
   `safetySettings`, `generationConfig`, `tools`, etc.
 

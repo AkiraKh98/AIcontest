@@ -1,5 +1,6 @@
-const MAX_BODY_BYTES = 8192;
-const MAX_PROMPT_CHARS = 4000;
+const MAX_BODY_CHARS = 8192;
+const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent';
+const stripSlash = (s) => (s || '').replace(/\/+$/, '');
 
 export default async (req) => {
   if (req.method !== 'POST') {
@@ -10,7 +11,6 @@ export default async (req) => {
   if (!allowed) {
     return new Response('Server misconfigured: ALLOWED_ORIGIN missing', { status: 500 });
   }
-  const stripSlash = (s) => (s || '').replace(/\/+$/, '');
   if (stripSlash(req.headers.get('origin')) !== stripSlash(allowed)) {
     return new Response('Forbidden', { status: 403 });
   }
@@ -21,7 +21,7 @@ export default async (req) => {
   }
 
   const raw = await req.text();
-  if (raw.length > MAX_BODY_BYTES) {
+  if (raw.length > MAX_BODY_CHARS) {
     return new Response('Body too large', { status: 413 });
   }
 
@@ -32,16 +32,14 @@ export default async (req) => {
   if (!parsed || !Array.isArray(parsed.contents)) {
     return new Response('Invalid body: expected { contents: [...] }', { status: 400 });
   }
-  const totalChars = JSON.stringify(parsed.contents).length;
-  if (totalChars > MAX_PROMPT_CHARS) {
-    return new Response('Prompt too large', { status: 413 });
-  }
 
   const safeBody = JSON.stringify({ contents: parsed.contents });
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${key}`;
-  const upstream = await fetch(url, {
+  const upstream = await fetch(GEMINI_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'x-goog-api-key': key,
+    },
     body: safeBody,
   });
   return new Response(upstream.body, {
