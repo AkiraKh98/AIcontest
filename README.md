@@ -4,6 +4,8 @@ A live, browser-only scene narrator. Point your webcam, speak a request,
 and a 3D avatar speaks back with a short narration that weaves together
 what the camera sees and what you asked for.
 
+*Built for AI BOOTCAMP by Abdulmajeed Alwardi.*
+
 **Live demo: https://mjeed.netlify.app/**
 
 ![PIPEL\AINE running — five panels showing scene tag, biometrics, voice input,
