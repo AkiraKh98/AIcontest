@@ -1,86 +1,136 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Scene Narrator</title>
-  <link rel="stylesheet" href="./style.css" />
+  <title>PIPEL\AINE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400;1,500&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="/src/style.css" />
 </head>
+
 <body>
+  <div class="crt-scanlines"></div>
+  <div class="crt-vignette"></div>
+
   <header class="site-header">
-    <h1>🎬 Scene Narrator</h1>
-    <p class="tagline">See → Sense → Speak → Story</p>
+    <div class="brand-bar">
+      <span>SYS_ID &nbsp;PIPEL\AINE.001</span>
+      <span id="clock">--:--:--</span>
+      <span>STATUS <span class="status-on">● ONLINE</span></span>
+    </div>
+    <h1 class="brand-title">PIPEL<span class="brand-slash">\</span>AINE</h1>
+    <p class="tagline">// SCENE NARRATOR · MULTIMODAL OBSERVATION PIPELINE</p>
   </header>
 
   <main>
-    <!-- Camera + landmarks overlay -->
     <section class="camera-section">
       <div class="camera-wrap">
         <video id="video" autoplay playsinline muted></video>
         <canvas id="overlay"></canvas>
-        <div class="camera-placeholder">📷 Webcam will appear here</div>
+        <div class="camera-placeholder">CAM.01 // STANDBY</div>
+        <div class="cam-meta">
+          <span class="rec-dot">●</span> REC <span id="cam-time">--:--:--</span>
+        </div>
+        <div class="cam-corner top-left">┌</div>
+        <div class="cam-corner top-right">┐</div>
+        <div class="cam-corner bottom-left">└</div>
+        <div class="cam-corner bottom-right">┘</div>
       </div>
     </section>
 
-    <!-- 3 perception panels -->
     <section class="perceptions">
       <article class="panel">
-        <header class="panel-header"><span>👁</span><h2>Scene</h2></header>
+        <header class="panel-header">
+          <span class="panel-num">[01]</span>
+          <h2>SCENE</h2>
+          <span class="panel-status">● LIVE</span>
+        </header>
         <div class="panel-body">
-          <div class="label" id="scene-label">desk_workspace</div>
-          <div class="bar"><div class="bar-fill" id="scene-bar" style="width: 91%"></div></div>
-          <div class="muted" id="scene-conf">91% confident</div>
+          <div class="label" id="scene-label">—</div>
+          <div class="bar">
+            <div class="bar-fill" id="scene-bar" style="width: 0%"></div>
+          </div>
+          <div class="muted" id="scene-conf">AWAITING SIGNAL</div>
         </div>
       </article>
 
       <article class="panel">
-        <header class="panel-header"><span>🦴</span><h2>Body Language</h2></header>
+        <header class="panel-header">
+          <span class="panel-num">[02]</span>
+          <h2>BIOMETRICS</h2>
+          <span class="panel-status">● LIVE</span>
+        </header>
         <div class="panel-body">
           <ul id="features-list">
-            <li>1 person detected</li>
-            <li>Posture: sitting</li>
-            <li>Expression: smiling</li>
-            <li>Hands: at keyboard level</li>
-            <li>Head: tilted slightly left</li>
+            <li style="color: var(--muted)">// scanning...</li>
           </ul>
         </div>
       </article>
 
       <article class="panel">
-        <header class="panel-header"><span>🎙</span><h2>Your Request</h2></header>
+        <header class="panel-header">
+          <span class="panel-num">[03]</span>
+          <h2>OPERATOR INPUT</h2>
+          <span class="panel-status">● READY</span>
+        </header>
         <div class="panel-body">
-          <div class="transcript" id="transcript">"describe this like a noir detective"</div>
-          <button id="mic-btn" class="btn-secondary">🎤 Start Listening</button>
+          <div class="transcript" id="transcript">// awaiting voice input...</div>
+          <button id="mic-btn" class="btn-secondary">▶ ENGAGE MIC</button>
         </div>
       </article>
     </section>
 
-    <!-- Narration -->
     <section>
       <article class="panel panel-narration">
-        <header class="panel-header"><span>📖</span><h2>Narration</h2></header>
+        <header class="panel-header">
+          <span class="panel-num">[04]</span>
+          <h2>OUTPUT // NARRATION</h2>
+          <span class="panel-status">● READY</span>
+        </header>
         <div class="panel-body">
-          <p id="narration-text">
-            In the warm glow of a cluttered desk, a figure leans slightly into their work,
-            a quiet smile suggesting the satisfaction of a thought just clicked into place.
-          </p>
+          <p id="narration-text">// awaiting generation...</p>
         </div>
         <footer class="panel-footer">
-          <button id="generate-btn" class="btn-primary">✨ Generate Narration</button>
-          <button id="capture-btn" class="btn-secondary">📸 Capture</button>
+          <button id="generate-btn" class="btn-primary">▷ GENERATE</button>
+          <button id="capture-btn" class="btn-secondary">◉ ARCHIVE</button>
         </footer>
       </article>
     </section>
 
-    <!-- History -->
+    <section>
+      <article class="panel panel-avatar">
+        <header class="panel-header">
+          <span class="panel-num">[05]</span>
+          <h2>EMBODIMENT // SUBJECT.AIJLAN</h2>
+          <span class="panel-status" id="avatar-status">● STANDBY</span>
+        </header>
+        <div class="panel-body">
+          <div id="avatar-container"></div>
+          <div class="avatar-controls">
+            <button id="speak-btn" class="btn-secondary">▶ REPLAY NARRATION</button>
+            <button id="stop-btn" class="btn-secondary">■ HALT</button>
+          </div>
+        </div>
+      </article>
+    </section>
+
     <section class="history">
-      <h2 class="history-title">History</h2>
+      <h2 class="history-title">// CAPTURE LOG</h2>
       <div id="history-list">
-        <p class="empty">Your captured scenes will appear here.</p>
+        <p class="empty">// NO ENTRIES &nbsp;//&nbsp; PRESS ◉ ARCHIVE TO STORE FRAMES</p>
       </div>
     </section>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
   <script type="module" src="/src/main.js"></script>
+
 </body>
+
 </html>
