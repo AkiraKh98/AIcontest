@@ -532,17 +532,18 @@ const jawTargets = [];
 function matchBone(name, side, part) {
   const n = name.toLowerCase().replace(/[_:.\s-]/g, '');
   const s = side.toLowerCase();
-  // upperarm/arm — distinguish from forearm
   if (part === 'arm') {
-    if (n.includes('forearm') || n.includes('lowerarm')) return false;
-    return (n.includes(s + 'arm') || n.includes(s + 'upperarm') || n.includes(s + 'shoulder' + 'arm'))
-      && !n.includes('shoulder');
+    if (n.includes('forearm') || n.includes('lowerarm') || n.includes('shoulder')) return false;
+    return n.includes(s + 'arm') || n.includes(s + 'upperarm');
   }
   if (part === 'forearm') {
-    return n.includes(s + 'forearm') || n.includes(s + 'lowerarm') || n.includes(s + 'elbow');
+    return n.includes(s + 'forearm') || n.includes(s + 'lowerarm');
   }
   if (part === 'hand') {
-    return n.endsWith(s + 'hand') || n === s + 'hand' || (n.includes(s + 'hand') && !n.includes('finger') && !n.includes('thumb'));
+    return n.endsWith(s + 'hand');
+  }
+  if (part === 'head') {
+    return n.endsWith('head') && !n.includes('neck');
   }
   return false;
 }
@@ -557,37 +558,47 @@ gltfLoader.load(
     avatar.position.set(0, 0, 0);
     avScene.add(avatar);
 
-    // Lower the arms out of T-pose. Apply per-side so we tolerate
-    // skeletons that name bones differently than Mixamo's exact "LeftArm".
+    // Quaternion path (not Euler) — glTF bones can carry rotation orders
+    // that make .rotation.set(...) a silent no-op after import.
+    const Z_AXIS = new THREE.Vector3(0, 0, 1);
+    const Y_AXIS = new THREE.Vector3(0, 1, 0);
+    function poseArm(bone, sign) {
+      bone.quaternion
+        .setFromAxisAngle(Z_AXIS, 1.45 * sign)
+        .multiply(new THREE.Quaternion().setFromAxisAngle(Y_AXIS, -0.1 * sign));
+      bone.updateMatrix();
+    }
+    function poseAxis(bone, axis, angle) {
+      bone.setRotationFromAxisAngle(axis, angle);
+      bone.updateMatrix();
+    }
+
+    // Some glTF exporters expose joints only through skeleton.bones, not as
+    // isBone scene nodes — walk skeletons explicitly and dedupe.
+    const visited = new Set();
     avatar.traverse((child) => {
-      if (child.isBone) {
-        const name = child.name;
-        if (matchBone(name, 'Left', 'arm')) {
-          child.rotation.set(0, 0, 1.25);
-        } else if (matchBone(name, 'Right', 'arm')) {
-          child.rotation.set(0, 0, -1.25);
-        } else if (matchBone(name, 'Left', 'forearm')) {
-          child.rotation.set(0, 0.2, 0.2);
-        } else if (matchBone(name, 'Right', 'forearm')) {
-          child.rotation.set(0, -0.2, -0.2);
-        } else if (matchBone(name, 'Left', 'hand')) {
-          child.rotation.set(0, 0, 0.1);
-        } else if (matchBone(name, 'Right', 'hand')) {
-          child.rotation.set(0, 0, -0.1);
-        } else if (/head$/i.test(name) && !/^.*neck/i.test(name)) {
-          headBone = child;
+      if (child.isSkinnedMesh && child.skeleton) {
+        for (const bone of child.skeleton.bones) {
+          if (visited.has(bone)) continue;
+          visited.add(bone);
+          const name = bone.name || '';
+          if (matchBone(name, 'Left', 'arm')) poseArm(bone, 1);
+          else if (matchBone(name, 'Right', 'arm')) poseArm(bone, -1);
+          else if (matchBone(name, 'Left', 'forearm')) poseAxis(bone, Y_AXIS, -0.15);
+          else if (matchBone(name, 'Right', 'forearm')) poseAxis(bone, Y_AXIS, 0.15);
+          else if (matchBone(name, 'Left', 'hand')) poseAxis(bone, Z_AXIS, 0.1);
+          else if (matchBone(name, 'Right', 'hand')) poseAxis(bone, Z_AXIS, -0.1);
+          else if (matchBone(name, '', 'head')) headBone = bone;
         }
       }
 
       if (child.isMesh && child.morphTargetDictionary) {
         const dict = child.morphTargetDictionary;
-        // Try each known mouth morph key in priority order.
         let idx = null;
         let key = null;
         for (const k of MOUTH_KEYS) {
           if (k in dict) { idx = dict[k]; key = k; break; }
         }
-        // Fallback: any morph whose name contains "jaw" or "mouthopen".
         if (idx === null) {
           for (const k of Object.keys(dict)) {
             if (/jawopen|mouthopen/i.test(k)) { idx = dict[k]; key = k; break; }
@@ -605,7 +616,6 @@ gltfLoader.load(
     frameOnHead();
 
     if (jawTargets.length > 0) {
-      console.log(`✅ Avatar loaded, jaw morph found on ${jawTargets.length} mesh(es): ${jawTargets.map(t => t.key).join(', ')}`);
       avatarStatus.textContent = '● READY';
     } else {
       console.warn('⚠️ Avatar loaded but no jawOpen morph — mouth won\'t animate');
@@ -622,29 +632,26 @@ gltfLoader.load(
   }
 );
 
-// Frame the camera on the actual head position rather than assuming y=1.7.
-// Different avatar exports place the head at very different heights, which is
-// what caused the model to drift out of view in panel [05].
+// Tight head-only framing: hides the body below the neck so the
+// T-pose arms stay out of view.
 function frameOnHead() {
   if (!avatar) return;
   const headPos = new THREE.Vector3();
   if (headBone) {
     headBone.updateWorldMatrix(true, false);
     headPos.setFromMatrixPosition(headBone.matrixWorld);
-    // Lift slightly so the headdress isn't cropped at the top.
-    headPos.y += 0.08;
   } else {
     const box = new THREE.Box3().setFromObject(avatar);
-    headPos.set((box.min.x + box.max.x) / 2, box.max.y - 0.18, (box.min.z + box.max.z) / 2);
+    headPos.set((box.min.x + box.max.x) / 2, box.max.y - 0.12, (box.min.z + box.max.z) / 2);
   }
-  cameraTarget.copy(headPos);
-  avCamera.position.set(headPos.x, headPos.y, headPos.z + 1.4);
+  cameraTarget.set(headPos.x, headPos.y + 0.04, headPos.z);
+  avCamera.position.set(headPos.x, headPos.y + 0.04, headPos.z + 0.7);
   avCamera.lookAt(cameraTarget);
 }
 
-// Animation loop
 let isSpeaking = false;
 let jawPhase = 0;
+let jawSettled = true;
 const avClock = new THREE.Clock();
 
 function animateAvatar() {
@@ -656,7 +663,7 @@ function animateAvatar() {
     avatar.position.y = Math.sin(elapsed * 0.6) * 0.004;
   }
 
-  if (jawTargets.length > 0) {
+  if (jawTargets.length > 0 && (isSpeaking || !jawSettled)) {
     let target;
     if (isSpeaking) {
       jawPhase += 0.32;
@@ -664,20 +671,26 @@ function animateAvatar() {
         (Math.sin(jawPhase) * 0.5 + 0.5) * 0.42 +
         (Math.sin(jawPhase * 2.7) * 0.5 + 0.5) * 0.12 +
         Math.random() * 0.05;
+      jawSettled = false;
     } else {
       target = 0;
     }
+    let maxInfl = 0;
     for (const t of jawTargets) {
       const infl = t.mesh.morphTargetInfluences;
       if (!infl) continue;
       const cur = infl[t.index] || 0;
-      infl[t.index] = cur + (target - cur) * (isSpeaking ? 0.55 : 0.18);
+      const next = cur + (target - cur) * (isSpeaking ? 0.55 : 0.18);
+      infl[t.index] = next;
+      if (next > maxInfl) maxInfl = next;
+    }
+    if (!isSpeaking && maxInfl < 1e-4) {
+      for (const t of jawTargets) {
+        if (t.mesh.morphTargetInfluences) t.mesh.morphTargetInfluences[t.index] = 0;
+      }
+      jawSettled = true;
     }
   }
-
-  // Keep camera locked on head — counteracts the avatar's vertical bob so
-  // the framing stays steady instead of drifting out of the panel.
-  avCamera.lookAt(cameraTarget);
 
   avRenderer.render(avScene, avCamera);
 }
