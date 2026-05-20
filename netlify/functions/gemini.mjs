@@ -10,7 +10,8 @@ export default async (req) => {
   if (!allowed) {
     return new Response('Server misconfigured: ALLOWED_ORIGIN missing', { status: 500 });
   }
-  if (req.headers.get('origin') !== allowed) {
+  const stripSlash = (s) => (s || '').replace(/\/+$/, '');
+  if (stripSlash(req.headers.get('origin')) !== stripSlash(allowed)) {
     return new Response('Forbidden', { status: 403 });
   }
 
